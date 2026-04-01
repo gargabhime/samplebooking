@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathology Lab Booking</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            /* Added a pathology background image with a light overlay for text readability */
+            background: linear-gradient(rgba(244, 247, 246, 0.85), rgba(244, 247, 246, 0.85)), url('https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&q=80&w=2000') no-repeat center center fixed;
+            background-size: cover;
+            padding: 20px; 
+        }
+        .form-container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        label { display: block; margin-top: 10px; font-weight: bold; color: #555; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; background-color: #007bff; color: white; padding: 10px; margin-top: 20px; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #success-msg { display: none; color: green; text-align: center; margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Book a Lab Test</h2>
+    <form id="bookingForm">
+        <label>Patient Name</label>
+        <input type="text" name="name" required placeholder="John Doe">
+
+        <label>Phone Number</label>
+        <input type="tel" name="phone" required pattern="[0-9]{10}" maxlength="10" minlength="10" title="Please enter exactly 10 digits" placeholder="9876543210">
+
+        <label>Test Needed</label>
+        <select name="test" required>
+            <option value="">Select a test...</option>
+            <option value="Complete Blood Count (CBC)">Complete Blood Count (CBC)</option>
+            <option value="Lipid Profile">Lipid Profile</option>
+            <option value="Thyroid Profile">Thyroid Profile</option>
+            <option value="Full Body Checkup">Full Body Checkup</option>
+        </select>
+
+        <label>Preferred Date</label>
+        <input type="date" name="date" required>
+
+        <button type="submit" id="submitBtn">Confirm Booking</button>
+        <div id="success-msg">Booking successful, we will call you shortly.</div>
+    </form>
+</div>
+
+<script>
+    const form = document.getElementById('bookingForm');
+    
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        document.getElementById('submitBtn').innerText = "Booking...";
+        
+        // PASTE YOUR GOOGLE SCRIPT URL BELOW (Left untouched as requested)
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbz8mKGTwXc9Yk1p7JvpmCajaHBZrmOH9O2zhXT8-mBSglF9sX_li-k0r9ibNbq8M7F4/exec';
+        
+        fetch(scriptURL, { method: 'POST', body: new FormData(form) })
+            .then(response => {
+                document.getElementById('success-msg').style.display = 'block';
+                document.getElementById('submitBtn').innerText = "Confirm Booking";
+                form.reset();
+            })
+            .catch(error => {
+                alert('There was an error! Please try again.');
+                document.getElementById('submitBtn').innerText = "Confirm Booking";
+            });
+    });
+</script>
+
+</body>
+</html>
