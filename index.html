@@ -33,13 +33,51 @@
         <input type="tel" name="phone" required pattern="[0-9]{10}" maxlength="10" minlength="10" title="Please enter exactly 10 digits" placeholder="9876543210">
 
         <label>Test Needed</label>
-        <select name="test" required>
-            <option value="">Select a test...</option>
-            <option value="Complete Blood Count (CBC)">Complete Blood Count (CBC)</option>
-            <option value="Lipid Profile">Lipid Profile</option>
-            <option value="Thyroid Profile">Thyroid Profile</option>
-            <option value="Full Body Checkup">Full Body Checkup</option>
-        </select>
+        <input list="testOptions" name="test" id="testInput" required placeholder="Search or select a test...">
+        <datalist id="testOptions">
+            <option value="Lipid Profile Advance">
+            <option value="LFT">
+            <option value="CBC">
+            <option value="Thyroid Profile">
+            <option value="Iron Studies">
+            <option value="KFT Advance">
+            <option value="HbA1c">
+            <option value="Urine RM">
+            <option value="Urine CS">
+            <option value="Ferritin">
+            <option value="Hemoglobin Hb">
+            <option value="Malarial Antigen, Vivax & Falciparum">
+            <option value="Typhi Dot IgM, IgG">
+            <option value="Vitamin B12 Cyanocobalamin">
+            <option value="Vitamin D Total-25 Hydroxy">
+            <option value="Random Blood Sugar">
+            <option value="BLOOD SUGAR (POST PRANDIAL)">
+            <option value="Dengue NS1 Antigen (Immunoassay)">
+            <option value="HIV 1&2 Antibodies">
+            <option value="Full Body Package">
+            <option value="Full Body Package Premium">
+            <option value="Gym Health Package-Male">
+            <option value="Gym Health Package- Female">
+            <option value="TSH">
+            <option value="Fertility Basic">
+            <option value="Fever Panel Basic">
+            <option value="FEVER ADVANCE PANEL">
+            <option value="PCOD Comprehensive">
+            <option value="Electrolytes Profile">
+            <option value="Bilirubin Profile">
+            <option value="Iron Studies With Ferritin">
+            <option value="Blood Group Profile ABO & Rh Typing (manual), Blood">
+            <option value="VDRL CSF">
+            <option value="Vitamin A Retinol">
+            <option value="Vitamin B1 Thiamine">
+            <option value="Vitamin B2 Riboflavin">
+            <option value="Vitamin B6 Pyridoxal Phosphate Blood">
+            <option value="Vitamin C Ascorbic Acid">
+            <option value="Vitamin D-1,25-Dihydroxy">
+            <option value="Vitamin E Tocopherol">
+            <option value="Vitamin K1">
+            <option value="Other">
+        </datalist>
 
         <label>Preferred Date</label>
         <input type="date" name="date" required>
