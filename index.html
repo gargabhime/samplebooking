@@ -19,9 +19,9 @@
         button:hover { background-color: #0056b3; }
         #success-msg { display: none; color: green; text-align: center; margin-top: 15px; font-weight: bold; }
         
-        /* New Styles for Multiple Tests Feature */
+        /* Styles for Multiple Tests Feature */
         .test-row { display: flex; gap: 10px; align-items: center; margin-top: 5px; }
-        .test-row input { margin-top: 0; } /* Prevents awkward spacing */
+        .test-row input { margin-top: 0; } 
         #addTestBtn { background-color: #28a745; margin-top: 10px; padding: 8px; font-size: 14px; width: auto; }
         #addTestBtn:hover { background-color: #218838; }
         .remove-btn { background-color: #dc3545; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; width: auto; margin-top: 0; }
@@ -31,7 +31,7 @@
 <body>
 
 <div class="form-container">
-    <h2>Inquiry Form for Lab Test</h2>
+    <h2>Inquiry form for Lab Test</h2>
     <form id="bookingForm">
         <label>Patient Name</label>
         <input type="text" name="name" required placeholder="John Doe">
@@ -96,7 +96,7 @@
         </datalist>
 
         <label>Preferred Date</label>
-        <input type="date" name="date" required>
+        <input type="date" name="date" id="dateInput" required>
 
         <button type="submit" id="submitBtn">Confirm Booking</button>
         <div id="success-msg">Booking successful, we will call you shortly.</div>
@@ -104,6 +104,12 @@
 </div>
 
 <script>
+    // --- NEW LOGIC: Disable past dates in the date picker ---
+    const dateInput = document.getElementById('dateInput');
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.setAttribute('min', today);
+    // --------------------------------------------------------
+
     const form = document.getElementById('bookingForm');
     const testsContainer = document.getElementById('testsContainer');
     const addTestBtn = document.getElementById('addTestBtn');
@@ -127,19 +133,18 @@
     form.addEventListener('submit', e => {
         e.preventDefault();
         
-        // --- NEW LOGIC: Combine all selected tests into a single string ---
+        // Combine all selected tests into a single string
         const testInputs = document.querySelectorAll('.test-input');
         const testArray = Array.from(testInputs)
             .map(input => input.value)
             .filter(val => val.trim() !== ""); // Filter out any empty boxes
         
-        // Save the combined list (e.g. "CBC, LFT") into the hidden input
+        // Save the combined list into the hidden input
         document.getElementById('allTestsHidden').value = testArray.join(", ");
-        // ------------------------------------------------------------------
 
         document.getElementById('submitBtn').innerText = "Booking...";
         
-        // PASTE YOUR GOOGLE SCRIPT URL BELOW (Left untouched)
+        // PASTE YOUR GOOGLE SCRIPT URL BELOW
         const scriptURL = 'https://script.google.com/macros/s/AKfycbz8mKGTwXc9Yk1p7JvpmCajaHBZrmOH9O2zhXT8-mBSglF9sX_li-k0r9ibNbq8M7F4/exec';
         
         fetch(scriptURL, { method: 'POST', body: new FormData(form) })
