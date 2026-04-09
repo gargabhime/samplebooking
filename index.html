@@ -7,7 +7,6 @@
     <style>
         body { 
             font-family: Arial, sans-serif; 
-            /* Added a pathology background image with a light overlay for text readability */
             background: linear-gradient(rgba(244, 247, 246, 0.85), rgba(244, 247, 246, 0.85)), url('https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&q=80&w=2000') no-repeat center center fixed;
             background-size: cover;
             padding: 20px; 
@@ -19,6 +18,14 @@
         button { width: 100%; background-color: #007bff; color: white; padding: 10px; margin-top: 20px; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
         button:hover { background-color: #0056b3; }
         #success-msg { display: none; color: green; text-align: center; margin-top: 15px; font-weight: bold; }
+        
+        /* New Styles for Multiple Tests Feature */
+        .test-row { display: flex; gap: 10px; align-items: center; margin-top: 5px; }
+        .test-row input { margin-top: 0; } /* Prevents awkward spacing */
+        #addTestBtn { background-color: #28a745; margin-top: 10px; padding: 8px; font-size: 14px; width: auto; }
+        #addTestBtn:hover { background-color: #218838; }
+        .remove-btn { background-color: #dc3545; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; width: auto; margin-top: 0; }
+        .remove-btn:hover { background-color: #c82333; }
     </style>
 </head>
 <body>
@@ -32,8 +39,17 @@
         <label>Phone Number</label>
         <input type="tel" name="phone" required pattern="[0-9]{10}" maxlength="10" minlength="10" title="Please enter exactly 10 digits" placeholder="9876543210">
 
-        <label>Test Needed</label>
-        <input list="testOptions" name="test" id="testInput" required placeholder="Search or select a test...">
+        <label>Test(s) Needed</label>
+        <div id="testsContainer">
+            <div class="test-row">
+                <input list="testOptions" class="test-input" required placeholder="Search or select a test...">
+            </div>
+        </div>
+        
+        <button type="button" id="addTestBtn">+ Add Another Test</button>
+
+        <input type="hidden" name="test" id="allTestsHidden">
+
         <datalist id="testOptions">
             <option value="Lipid Profile Advance">
             <option value="LFT">
@@ -89,19 +105,55 @@
 
 <script>
     const form = document.getElementById('bookingForm');
+    const testsContainer = document.getElementById('testsContainer');
+    const addTestBtn = document.getElementById('addTestBtn');
+
+    // Logic to add a new test row
+    addTestBtn.addEventListener('click', () => {
+        const row = document.createElement('div');
+        row.className = 'test-row';
+        row.innerHTML = `
+            <input list="testOptions" class="test-input" required placeholder="Search or select a test...">
+            <button type="button" class="remove-btn">X</button>
+        `;
+        testsContainer.appendChild(row);
+
+        // Logic to remove a test row
+        row.querySelector('.remove-btn').addEventListener('click', () => {
+            row.remove();
+        });
+    });
     
     form.addEventListener('submit', e => {
         e.preventDefault();
+        
+        // --- NEW LOGIC: Combine all selected tests into a single string ---
+        const testInputs = document.querySelectorAll('.test-input');
+        const testArray = Array.from(testInputs)
+            .map(input => input.value)
+            .filter(val => val.trim() !== ""); // Filter out any empty boxes
+        
+        // Save the combined list (e.g. "CBC, LFT") into the hidden input
+        document.getElementById('allTestsHidden').value = testArray.join(", ");
+        // ------------------------------------------------------------------
+
         document.getElementById('submitBtn').innerText = "Booking...";
         
-        // PASTE YOUR GOOGLE SCRIPT URL BELOW (Left untouched as requested)
+        // PASTE YOUR GOOGLE SCRIPT URL BELOW (Left untouched)
         const scriptURL = 'https://script.google.com/macros/s/AKfycbz8mKGTwXc9Yk1p7JvpmCajaHBZrmOH9O2zhXT8-mBSglF9sX_li-k0r9ibNbq8M7F4/exec';
         
         fetch(scriptURL, { method: 'POST', body: new FormData(form) })
             .then(response => {
                 document.getElementById('success-msg').style.display = 'block';
                 document.getElementById('submitBtn').innerText = "Confirm Booking";
+                
+                // Reset form and remove any extra dynamically added test rows
                 form.reset();
+                testsContainer.innerHTML = `
+                    <div class="test-row">
+                        <input list="testOptions" class="test-input" required placeholder="Search or select a test...">
+                    </div>
+                `;
             })
             .catch(error => {
                 alert('There was an error! Please try again.');
