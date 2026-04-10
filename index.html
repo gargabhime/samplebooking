@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pathology Lab Booking</title>
+    <title>Pathology Lab Inquiry</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -20,8 +20,20 @@
         #success-msg { display: none; color: green; text-align: center; margin-top: 15px; font-weight: bold; }
         
         /* Styles for Multiple Tests Feature */
-        .test-row { display: flex; gap: 10px; align-items: center; margin-top: 5px; }
-        .test-row input { margin-top: 0; } 
+        .test-row { display: flex; gap: 10px; align-items: flex-start; margin-top: 5px; }
+        .input-wrapper { flex: 1; position: relative; } 
+        .test-input { margin-top: 0; width: 100%; } 
+        
+        /* Custom Dropdown Styling */
+        .autocomplete-list {
+            position: absolute; top: 100%; left: 0; right: 0; z-index: 99;
+            background: white; border: 1px solid #ccc; border-radius: 4px;
+            max-height: 200px; overflow-y: auto; display: none; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15); margin-top: 2px;
+        }
+        .autocomplete-list div { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; color: #333; }
+        .autocomplete-list div:hover { background-color: #007bff; color: white; }
+
         #addTestBtn { background-color: #28a745; margin-top: 10px; padding: 8px; font-size: 14px; width: auto; }
         #addTestBtn:hover { background-color: #218838; }
         .remove-btn { background-color: #dc3545; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; width: auto; margin-top: 0; }
@@ -31,7 +43,7 @@
 <body>
 
 <div class="form-container">
-    <h2>Inquiry form for Lab Test Booking</h2>
+    <h2>Inquiry form for Lab Test</h2>
     <form id="bookingForm">
         <label>Patient Name</label>
         <input type="text" name="name" required placeholder="John Doe">
@@ -42,7 +54,9 @@
         <label>Test(s) Needed</label>
         <div id="testsContainer">
             <div class="test-row">
-                <input list="testOptions" class="test-input" required placeholder="Search or select a test...">
+                <div class="input-wrapper">
+                    <input type="text" class="test-input" required placeholder="Search or select a test..." autocomplete="off">
+                </div>
             </div>
         </div>
         
@@ -50,7 +64,7 @@
 
         <input type="hidden" name="test" id="allTestsHidden">
 
-        <datalist id="testOptions">
+        <datalist id="testOptions" style="display: none;">
             <option value="Lipid Profile Advance">
             <option value="LFT">
             <option value="CBC">
@@ -98,51 +112,98 @@
         <label>Preferred Date</label>
         <input type="date" name="date" id="dateInput" required>
 
-        <button type="submit" id="submitBtn">Confirm Booking</button>
-        <div id="success-msg">Booking successful, we will call you shortly.</div>
+        <button type="submit" id="submitBtn">Submit Inquiry</button>
+        <div id="success-msg">Submit Successful, we will call you shortly.</div>
     </form>
 </div>
 
 <script>
-    // --- NEW LOGIC: Disable past dates in the date picker ---
+    // --- Disable past dates in the date picker ---
     const dateInput = document.getElementById('dateInput');
     const today = new Date().toISOString().split('T')[0];
     dateInput.setAttribute('min', today);
-    // --------------------------------------------------------
 
+    // --- Custom Dropdown Logic ---
+    const testOptionsList = Array.from(document.querySelectorAll('#testOptions option')).map(opt => opt.value);
+
+    function setupAutocomplete(inputWrapper) {
+        const inputElement = inputWrapper.querySelector('.test-input');
+        
+        const listContainer = document.createElement('div');
+        listContainer.className = 'autocomplete-list';
+        inputWrapper.appendChild(listContainer);
+
+        function renderList(filterText = "") {
+            listContainer.innerHTML = '';
+            let hasMatches = false;
+            
+            testOptionsList.forEach(opt => {
+                if (opt.toLowerCase().includes(filterText.toLowerCase())) {
+                    hasMatches = true;
+                    const item = document.createElement('div');
+                    item.innerText = opt;
+                    item.addEventListener('click', function() {
+                        inputElement.value = opt;
+                        listContainer.style.display = 'none';
+                    });
+                    listContainer.appendChild(item);
+                }
+            });
+            listContainer.style.display = hasMatches ? 'block' : 'none';
+        }
+
+        inputElement.addEventListener('input', () => renderList(inputElement.value));
+        
+        inputElement.addEventListener('focus', () => {
+            document.querySelectorAll('.input-wrapper').forEach(w => w.style.zIndex = 1);
+            inputWrapper.style.zIndex = 10;
+            renderList(inputElement.value);
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!inputWrapper.contains(e.target)) {
+                listContainer.style.display = 'none';
+            }
+        });
+    }
+
+    setupAutocomplete(document.querySelector('.input-wrapper'));
+
+    // --- Dynamic Row Addition ---
     const form = document.getElementById('bookingForm');
     const testsContainer = document.getElementById('testsContainer');
     const addTestBtn = document.getElementById('addTestBtn');
 
-    // Logic to add a new test row
     addTestBtn.addEventListener('click', () => {
         const row = document.createElement('div');
         row.className = 'test-row';
         row.innerHTML = `
-            <input list="testOptions" class="test-input" required placeholder="Search or select a test...">
+            <div class="input-wrapper">
+                <input type="text" class="test-input" required placeholder="Search or select a test..." autocomplete="off">
+            </div>
             <button type="button" class="remove-btn">X</button>
         `;
         testsContainer.appendChild(row);
 
-        // Logic to remove a test row
+        setupAutocomplete(row.querySelector('.input-wrapper'));
+
         row.querySelector('.remove-btn').addEventListener('click', () => {
             row.remove();
         });
     });
     
+    // --- Form Submission Logic ---
     form.addEventListener('submit', e => {
         e.preventDefault();
         
-        // Combine all selected tests into a single string
         const testInputs = document.querySelectorAll('.test-input');
         const testArray = Array.from(testInputs)
             .map(input => input.value)
-            .filter(val => val.trim() !== ""); // Filter out any empty boxes
+            .filter(val => val.trim() !== ""); 
         
-        // Save the combined list into the hidden input
         document.getElementById('allTestsHidden').value = testArray.join(", ");
 
-        document.getElementById('submitBtn').innerText = "Booking...";
+        document.getElementById('submitBtn').innerText = "Inquiry Submitting...";
         
         // PASTE YOUR GOOGLE SCRIPT URL BELOW
         const scriptURL = 'https://script.google.com/macros/s/AKfycbz8mKGTwXc9Yk1p7JvpmCajaHBZrmOH9O2zhXT8-mBSglF9sX_li-k0r9ibNbq8M7F4/exec';
@@ -150,19 +211,21 @@
         fetch(scriptURL, { method: 'POST', body: new FormData(form) })
             .then(response => {
                 document.getElementById('success-msg').style.display = 'block';
-                document.getElementById('submitBtn').innerText = "Confirm Booking";
+                document.getElementById('submitBtn').innerText = "Submit Inquiry";
                 
-                // Reset form and remove any extra dynamically added test rows
                 form.reset();
                 testsContainer.innerHTML = `
                     <div class="test-row">
-                        <input list="testOptions" class="test-input" required placeholder="Search or select a test...">
+                        <div class="input-wrapper">
+                            <input type="text" class="test-input" required placeholder="Search or select a test..." autocomplete="off">
+                        </div>
                     </div>
                 `;
+                setupAutocomplete(testsContainer.querySelector('.input-wrapper'));
             })
             .catch(error => {
                 alert('There was an error! Please try again.');
-                document.getElementById('submitBtn').innerText = "Confirm Booking";
+                document.getElementById('submitBtn').innerText = "Submit Inquiry";
             });
     });
 </script>
